@@ -1,29 +1,34 @@
 (ns re-frame.flow.demo
-  (:require
-   [reagent.dom.client :as rdc]
-   [re-frame.alpha :as rf]
-   [zprint.core :as zp]
-   [clojure.string :as str]
-   [re-frame.db :refer [app-db]]))
+  (:require [zprint.core :as zp]
+            [clojure.string :as str]
+            [re-frame.alpha :as rf]
+            [re-frame.alpha.uix :refer [use-subscribe use-sub]]
+            [re-frame.uix :refer [use-reactive-node]]
+            [re-frame.db :refer [app-db]]
+            [uix.core :as uix :refer [defui $]]
+            [uix.dom :as dom]))
 
-(defn debug-app-db []
-  (fn []
-    [:pre {:style {:position "absolute" :bottom 0 :right 0 :font-size 8}}
-     (some-> app-db
-             deref
+(defui debug-app-db []
+  ($ :pre {:style #js {:position "absolute"
+                       :bottom   0
+                       :right    0
+                       :fontSize 8}}
+     (some-> (use-reactive-node app-db)
              (zp/zprint-str {:style :justified})
              (str/replace #"re-frame.flow.demo/" ":")
-             (str/replace #"re-fine." ":"))]))
+             (str/replace #"re-fine." ":"))))
 
 (rf/reg-sub ::items :-> (comp reverse ::items))
 
-(defn item [id]
-  [:div "Item " id])
+(defui item [{:keys [id]}]
+  ($ :div "Item " id))
 
-(defn items []
-  (into [:div]
-        (map item)
-        @(rf/subscribe [::items])))
+(defui items []
+  (let [item-ids (use-subscribe [::items])]
+    ($ :div
+       (for [id item-ids]
+         ($ item {:key id
+                  :id id})))))
 
 (rf/reg-event-db
  ::clear-all
@@ -37,22 +42,24 @@
  ::delete-item
  (fn [db [_ id]] (update db ::items #(remove #{id} %))))
 
-(defn controls []
-  (let [id (atom 0)]
-    (fn []
-      [:div
-       [:button {:on-click #(do (rf/dispatch [::add-item (inc @id)])
-                                (swap! id inc))} "Add"] " "
-       [:button {:on-click #(do (rf/dispatch [::delete-item @id])
-                                (swap! id dec))} "Delete"] " "
-       [:button {:on-click #(do (rf/dispatch [::clear-all])
-                                (reset! id 0))} "Clear"] " "])))
+(defui controls []
+  (let [[id set-id] (uix/use-state 0)]
+    ($ :div
+       ($ :button {:on-click #(do (rf/dispatch [::add-item (inc id)])
+                                  (set-id inc))} "Add")
+       " "
+       ($ :button {:on-click #(do (rf/dispatch [::delete-item id])
+                                  (set-id dec))} "Delete")
+       " "
+       ($ :button {:on-click #(do (rf/dispatch [::clear-all])
+                                  (set-id 0))} "Clear")
+       " ")))
 
 (def error-state-flow
   {:id ::error-state
    :path [::error-state]
    :inputs {:items [::items]}
-   :output (fn [_ {:keys [items]}]
+   :output (fn [{:keys [items]}]
              (cond
                (> (count items) 2) :too-many
                (empty? items)      :none))
@@ -71,30 +78,32 @@
  ::reg-flow
  (fn [_ _] {:fx [[:reg-flow error-state-flow]]}))
 
-(defn flow-controls []
-  [:div [:button {:on-click #(do (rf/dispatch [::clear-flow]))}
-         "Clear flow"] " "
-   [:button {:on-click #(do (rf/dispatch [::reg-flow]))}
-    "Register flow"]])
+(defui flow-controls []
+  ($ :div
+     ($ :button {:on-click #(do (rf/dispatch [::clear-flow]))}
+        "Clear flow")
+     " "
+     ($ :button {:on-click #(do (rf/dispatch [::reg-flow]))}
+        "Register flow")))
 
-(defn warning []
-  (let [error-state (rf/subscribe [:flow {:id ::error-state}])]
-    [:div {:style {:color "red"}}
-     (->> @error-state
+(defui warning []
+  (let [error-state (use-subscribe [:flow {:id ::error-state}])]
+    ($ :div {:style #js {:color "red"}}
+     (->> error-state
           (get {:too-many "Warning: only the first 3 items will be used."
-                :none     "No items. Please add one."}))]))
+                :none     "No items. Please add one."})))))
 
-(defn root []
-  [:div [controls] [flow-controls] [warning] [items] [debug-app-db]])
+(defui root []
+  ($ :div ($ controls) ($ flow-controls) ($ warning) ($ items) ($ debug-app-db)))
 
 (rf/reg-event-db
  ::init
  (fn [db _] db))
 
 (defonce root-container
-  (rdc/create-root (js/document.getElementById "app")))
+  (dom/create-root (js/document.getElementById "app")))
 
 (defn run
   []
   (rf/dispatch-sync [::init])
-  (rdc/render root-container [root]))
+  (dom/render-root ($ root) root-container))

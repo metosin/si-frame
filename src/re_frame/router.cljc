@@ -2,7 +2,8 @@
   (:require [re-frame.events  :refer [handle]]
             [re-frame.interop :refer [after-render empty-queue next-tick]]
             [re-frame.loggers :refer [console]]
-            [re-frame.trace   :as trace :include-macros true]))
+            [re-frame.trace   :as trace :include-macros true]
+            [signaali.reactive :as sr]))
 
 ;; -- Router Loop ------------------------------------------------------------
 ;;
@@ -225,16 +226,26 @@
 ;; Dispatching
 ;;
 
+(defn- dispatch-immediately
+  "Dispatches an event and then runs the stale effectful nodes."
+  [event]
+  (handle event)
+  (sr/re-run-stale-effectful-nodes))
+
 (defn dispatch
   [event]
+  #_
   (if (nil? event)
     (throw (ex-info "re-frame: you called \"dispatch\" without an event vector." {}))
     (push event-queue event))
+  (dispatch-immediately event)
   nil)                                           ;; Ensure nil return. See https://github.com/day8/re-frame/wiki/Beware-Returning-False
 
 (defn dispatch-sync
   [event-v]
+  #_#_
   (handle event-v)
   (-call-post-event-callbacks event-queue event-v)  ;; slightly ugly hack. Run the registered post event callbacks.
+  (dispatch-immediately event-v)
   (trace/with-trace {:op-type :sync})
   nil)                                              ;; Ensure nil return. See https://github.com/day8/re-frame/wiki/Beware-Returning-False

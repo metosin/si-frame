@@ -1,6 +1,8 @@
 (ns simple.core
-  (:require [reagent.dom.client :as rdc]
-            [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [re-frame.uix :refer [use-subscribe]]
+            [uix.core :as uix :refer [defui $]]
+            [uix.dom :as dom]))
 
 ;; A detailed walk-through of this source code is provided in the docs:
 ;; https://day8.github.io/re-frame/dominoes-live/
@@ -49,41 +51,42 @@
 
 ;; -- Domino 5 - View Functions ----------------------------------------------
 
-(defn clock
+(defui clock
   []
-  (let [colour @(rf/subscribe [:time-color])
-        time   (-> @(rf/subscribe [:time])
+  (let [colour (use-subscribe [:time-color])
+        time   (-> (use-subscribe [:time])
                    .toTimeString
                    (clojure.string/split " ")
                    first)]
-    [:div.example-clock {:style {:color colour}} time]))
+    ($ :div.example-clock {:style #js {:color colour}} time)))
 
-(defn color-input
+(defui color-input
   []
-  (let [gettext (fn [e] (-> e .-target .-value))
+  (let [time-color (use-subscribe [:time-color])
+        gettext (fn [e] (-> e .-target .-value))
         emit    (fn [e] (rf/dispatch [:time-color-change (gettext e)]))]
-    [:div.color-input
-     "Display color: "
-     [:input {:type "text"
-              :style {:border "1px solid #CCC"}
-              :value @(rf/subscribe [:time-color])        ;; subscribe
-              :on-change emit}]]))  ;; <---
+    ($ :div.color-input
+       "Display color: "
+       ($ :input {:type "text"
+                  :style #js {:border "1px solid #CCC"}
+                  :value time-color
+                  :on-change emit}))))
 
-(defn ui
+(defui ui
   []
-  [:div
-   [:h1 "The time is now:"]
-   [clock]
-   [color-input]])
+  ($ :div
+     ($ :h1 "The time is now:")
+     ($ clock)
+     ($ color-input)))
 
 ;; -- Entry Point -------------------------------------------------------------
 
 (defonce root-container
-  (rdc/create-root (js/document.getElementById "app")))
+  (dom/create-root (js/document.getElementById "app")))
 
 (defn mount-ui
   []
-  (rdc/render root-container [ui]))
+  (dom/render-root ($ ui) root-container))
 
 (defn ^:dev/after-load clear-cache-and-render!
   []

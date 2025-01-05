@@ -6,7 +6,7 @@
    [re-frame.loggers     :refer [console]]
    [re-frame.interceptor :refer [->interceptor get-effect get-coeffect assoc-effect]]
    [re-frame.interop :as interop]
-   #?(:cljs [reagent.core :as r])))
+   #?(:cljs [signaali.reactive :as sr])))
 
 (def db-path? vector?)
 
@@ -94,7 +94,9 @@
                     (merge
                      {::new? true}
                      #?(:cljs
-                        {::ref (r/reaction (get-in @db/app-db (:path m)))}))))))
+                        {::ref (sr/create-memo (fn []
+                                                 (get-in @db/app-db (:path m)))
+                                               {:propagation-filter-fn not=})}))))))
 
 (defn clear-flow
   ([]
