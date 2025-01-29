@@ -16,10 +16,9 @@ Project status: [experimental](https://github.com/metosin/open-source/blob/main/
 - The fork is working fine when tested on our own projects and on the port of Re-frame's examples.
 - We didn't port Re-frame's unit tests which are still using Reagent atoms.
 - Re-signaali behaves a bit differently compared to Re-frame:
-  - Re-frame's event queue is bypassed.
-  - Reagent's event queue is bypassed.
-  - As a result, the jumping caret bug no longer exists in this fork.
-  - `rf/dispatch` and `rf/dispatch-sync` are the same function.
+  
+  Because the Reagent interop is implemented using Signaali, there is no event queue.
+  As a result, the jumping caret bug no longer exists in this fork.
 
 ## Ported Re-frame library
 
