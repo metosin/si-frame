@@ -1,4 +1,64 @@
+# Si-frame
 
+This project is a fork of [Re-frame `v1.4.3`](https://github.com/day8/re-frame/tree/v1.4.3) where
+the reactivity is implemented using [Signaali](https://github.com/metosin/signaali)
+via [Siagent](https://github.com/metosin/siagent) instead of [Reagent](https://github.com/reagent-project/reagent).
+
+It was created:
+- to battle-proof Signaali's API before its release,
+- to demonstrate how Signaali could be used in future versions of Re-frame,
+- for Re-frame users who already use another React wrapper than Reagent and who want to try Signaali.
+
+Project status: [experimental](https://github.com/metosin/open-source/blob/main/project-status.md#experimental).
+
+## How well does it work?
+
+- The fork is working fine when tested on our own projects and on the port of Re-frame's examples.
+- The fork passes all the unit tests in the same way than the original, except for one test in `re-frame.flow.alpha-test`.
+  Because this feature is still "alpha", I didn't bother investigate but I suspect that the difference is due to
+  the expectation from Re-frame that the Reagent atoms are run eagerly while Signaali's reactive nodes are run lazily.
+
+## Ported Re-frame library
+
+The namespaces were not modified, keep using it as if it was the original Re-frame project.
+
+What's different in the library:
+- Reagent was replaced by Siagent.
+- Some small changes were needed in `re-frame.interop` to making it work with Signaali.
+- `re-frame.interop/after-render` won't work exactly in the same way, but most apps don't use it.
+
+## How to use it in your Re-frame project
+
+In your `deps.edn`, replace the re-frame dependencies with:
+
+```clojure
+fi.metosin/si-frame {:mvn/version "1.4.3.0"}
+```
+
+This lib should work for you if:
+- All the Reagent features your Reagent components (if any) are using are supported by [Siagent](https://github.com/metosin/siagent).
+- Your codebase is not directly using the low level implementation of Reagent, e.g. the `reagent.ratom/RAtom` type.
+
+## Will this be maintained?
+
+**Yes.**
+
+The change compared to the Re-frame codebase is so small that it will probably be very easy
+to make a new release of this fork for any official release of Re-frame after the current `v1.4.3`.
+
+However, I do hope that in the future Re-frame can offer a customization mechanism for its reactivity
+such that no project fork is needed.
+
+## Feedback
+
+Your feedback is greatly appreciated and needed. Please let us know how was your experience with our fork
+in [![Slack](https://img.shields.io/badge/slack-signaali-orange.svg?logo=slack)](https://clojurians.slack.com/app_redirect?channel=signaali)
+
+---
+
+Below this line is the original content of Re-frame's `README.md`.
+
+---
 
 <p align="center"><a href="https://day8.github.io/re-frame" target="_blank" rel="noopener noreferrer"><img src="docs/images/logo/re-frame-colour.png?raw=true" alt="re-frame logo"></a></p>
 

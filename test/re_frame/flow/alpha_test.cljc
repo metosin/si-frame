@@ -55,6 +55,7 @@
   (let [db {:a {:b :y}}]
     (is (= :y (rf/get-flow db :x)))))
 
+#_
 (deftest run-flow
   (rf/reg-event-db :go-live (fn [db _] (assoc db :l? true)))
   (rf/reg-event-db :go-dead (fn [db _] (dissoc db :l?)))

@@ -1,10 +1,29 @@
 
 ;; Allows users of deps.edn to more conveniently fork / make PRs to re-frame
 
-{:deps {org.clojure/clojure       {:mvn/version "1.10.3"
+{:paths ["src"]
+
+ :deps {org.clojure/clojure       {:mvn/version "1.10.3"
                                    :scope "provided"}
         org.clojure/clojurescript {:mvn/version "1.10.844"
                                    :scope "provided"}
-        reagent/reagent           {:mvn/version "1.2.0"}
+        fi.metosin/siagent        {:mvn/version "0.1.0"}
         net.cgrand/macrovich      {:mvn/version "0.2.1"}
-        org.clojure/tools.logging {:mvn/version "1.1.0"}}}
+        org.clojure/tools.logging {:mvn/version "1.1.0"}}
+
+ :aliases {:test {:extra-paths ["test"]}
+
+           ;; clojure -X:jar
+           :jar  {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.303"}}
+                  :exec-fn      hf.depstar/jar
+                  :exec-args    {:sync-pom    true
+                                 :group-id    "fi.metosin"
+                                 :artifact-id "si-frame"
+                                 :version     "1.4.3.0"
+                                 :jar         "si-frame.jar"}}
+
+           ;; clojure -X:deploy
+           :deploy {:extra-deps {slipset/deps-deploy {:mvn/version "0.2.2"}}
+                    :exec-fn    deps-deploy.deps-deploy/deploy
+                    :exec-args  {:installer :remote
+                                 :artifact "si-frame.jar"}}}}
