@@ -14,7 +14,7 @@
 
 (def empty-queue #queue [])
 
-(def after-render (fn [& _])) ;; WON'T FIX
+(def after-render next-tick) ;; WON'T FIX
 
 ;; Make sure the Google Closure compiler sees this as a boolean constant,
 ;; otherwise Dead Code Elimination won't happen in `:advanced` builds.
