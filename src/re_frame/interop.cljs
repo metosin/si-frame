@@ -1,8 +1,7 @@
 (ns re-frame.interop
   (:require [goog.async.nextTick]
             [goog.events :as events]
-            [signaali.reactive :as sr]
-            [signaali.mutable.stack :as stack]))
+            [signaali.reactive :as sr]))
 
 (defn on-load
   [listener]
@@ -71,4 +70,4 @@
 
 (defn reactive?
   []
-  (pos? (stack/count sr/observer-stack)))
+  (some? (sr/get-current-observer)))
