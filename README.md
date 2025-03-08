@@ -1,5 +1,9 @@
 # Si-frame
 
+[![Clojars Project](https://img.shields.io/clojars/v/fi.metosin/si-frame.svg)](https://clojars.org/fi.metosin/si-frame)
+[![Slack](https://img.shields.io/badge/slack-signaali-orange.svg?logo=slack)](https://clojurians.slack.com/app_redirect?channel=signaali)
+[![cljdoc badge](https://cljdoc.org/badge/fi.metosin/si-frame)](https://cljdoc.org/d/fi.metosin/si-frame)
+
 This project is a fork of [Re-frame `v1.4.3`](https://github.com/day8/re-frame/tree/v1.4.3) where
 the reactivity is implemented using [Signaali](https://github.com/metosin/signaali)
 via [Siagent](https://github.com/metosin/siagent) instead of [Reagent](https://github.com/reagent-project/reagent).
@@ -38,6 +42,21 @@ fi.metosin/si-frame {:mvn/version "1.4.3.0"}
 This lib should work for you if:
 - All the Reagent features your Reagent components (if any) are using are supported by [Siagent](https://github.com/metosin/siagent).
 - Your codebase is not directly using the low level implementation of Reagent, e.g. the `reagent.ratom/RAtom` type.
+
+## UIx interop
+
+We provide the extra namespace `re-frame.uix` for UIx users who need to use the subscriptions as React hooks.
+
+Example:
+```clojure
+(ns my-namespace
+  (:require [re-frame.uix :refer [use-subscribe]]
+            [uix.core :as uix :refer [$ defui]]))
+
+(defui my-component []
+  (let [user-display-name (use-subscribe [:user/display-name])]
+    ($ :div "Hello " user-display-name)))
+```
 
 ## Will this be maintained?
 
